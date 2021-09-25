@@ -1,0 +1,17 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import 'sweetalert2/dist/sweetalert2.min.css';
+
+
+.dialog-btn-danger {
+    @apply bg-red-600 !important;
+}
+
+.dialog-btn-primary {
+    @apply bg-gray-900 !important;
+}
+
+.dialog-btn-cancel {
+    @apply bg-gray-300 text-gray-600 !important;
+}
