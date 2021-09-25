@@ -3,6 +3,8 @@
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskReportController;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -18,6 +20,10 @@ use Inertia\Inertia;
 */
 
 Route::get('/', function () {
+    if (Auth::check()) {
+        return Redirect::route('tasks.index');
+    }
+
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
