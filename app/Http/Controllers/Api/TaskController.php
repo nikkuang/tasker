@@ -78,7 +78,9 @@ class TaskController extends Controller
             'status' => ['string', 'max:255']
         ]);
 
-        $task->update(['status' => $request->input('status')]);
+        DB::transaction(function () use ($request, $task) {
+            $task->update(['status' => $request->input('status')]);
+        });
 
         return response()->noContent();
     }
