@@ -44,11 +44,10 @@ class TaskReportController extends Controller
                     ->whereNotIn('status', TaskStatus::getValues())
                     ->limit(1),
             ])
-            ->first()
-            ->toArray();
+            ->first();
 
         return Inertia::render('Task/Report', [
-            'reports' => $reports
+            'reports' => optional($reports)->toArray() ?: []
         ]);
     }
 
