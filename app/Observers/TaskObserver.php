@@ -37,13 +37,6 @@ class TaskObserver
                     ->descendantsOf($task)
                     ->where('status', TaskStatus::PENDING)
                     ->update(['status' => TaskStatus::COMPLETED]);
-
-                Task::query()
-                    ->whereDoesntHave('subtasks', function ($query) {
-                        $query->where('status', TaskStatus::PENDING);
-                    })
-                    ->where('id', $task->parent_id)
-                    ->update(['status' => TaskStatus::COMPLETED]);
             } elseif ($task->status === TaskStatus::PENDING) {
                 Task::query()
                     ->where(function ($query) use ($task) {
@@ -56,6 +49,27 @@ class TaskObserver
                 Task::query()
                     ->descendantsOf($task)
                     ->update(['status' => TaskStatus::CANCELLED]);
+            }
+        }
+    }
+
+    /**
+     * Handle the Task "updated" event.
+     *
+     * @param  \App\Models\Task  $task
+     * @return void
+     */
+    public function updated(Task $task)
+    {
+        if ($task->isSubtask() && $task->status === TaskStatus::COMPLETED) {
+            // Check other descendants.
+            $hasPending = Task::query()
+                ->descendantsOf($task->parent)
+                ->where('status', TaskStatus::PENDING)
+                ->exists();
+
+            if (!$hasPending) {
+                $task->parent->update(['status' => TaskStatus::COMPLETED]);
             }
         }
     }
