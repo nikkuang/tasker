@@ -8,6 +8,7 @@ use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
@@ -44,7 +45,10 @@ class TaskController extends Controller
      */
     public function restore($id)
     {
-        $task = Task::onlyTrashed()->findOrFail($id);
+        $task = Task::query()
+            ->ownedBy(auth()->user())
+            ->onlyTrashed()
+            ->findOrFail($id);
 
         if (filled($task->parent_hierarchy)) {
             $isBroken =Task::query()
@@ -74,6 +78,8 @@ class TaskController extends Controller
      */
     public function status(Request $request, Task $task)
     {
+        Gate::authorize('update', $task);
+
         $request->validate([
             'status' => ['string', 'max:255']
         ]);

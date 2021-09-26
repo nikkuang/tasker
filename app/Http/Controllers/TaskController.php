@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TaskRequest;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -59,6 +60,7 @@ class TaskController extends Controller
                 },
                 'parent'
             ])
+            ->ownedBy($request->user())
             ->findOrFail($id);
 
         return Inertia::render('Task/Show', [
@@ -75,6 +77,8 @@ class TaskController extends Controller
      */
     public function subtask(TaskRequest $request, Task $task)
     {
+        Gate::authorize('update', $task);
+
         $task->subtasks()->create($request->validated());
 
         return Redirect::route('tasks.show', $task->getKey());
@@ -105,6 +109,8 @@ class TaskController extends Controller
      */
     public function update(TaskRequest $request, Task $task)
     {
+        Gate::authorize('update', $task);
+
         $task->update($request->validated());
 
         if ($request->input('as_subtask', false)) {
@@ -131,6 +137,7 @@ class TaskController extends Controller
                 $query->withTrashed();
             }])
             ->withCount('subtasks')
+            ->ownedBy($request->user())
             ->onlyTrashed()
             ->latest('deleted_at')
             ->get();
@@ -150,6 +157,8 @@ class TaskController extends Controller
     {
         $task = Task::withTrashed()->findOrFail($id);
 
+        Gate::authorize('forceDelete', $task);
+
         $task->forceDelete();
 
         return Redirect::route('tasks.trashed');
@@ -163,6 +172,8 @@ class TaskController extends Controller
      */
     public function trash(Task $task)
     {
+        Gate::authorize('delete', $task);
+
         $task->delete();
 
         if ($task->isSubtask()) {
